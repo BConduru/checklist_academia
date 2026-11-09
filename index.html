@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checklist de Treinos - Nov & Dez</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tap-highlight-transparent {
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom Checkbox Animation */
+        .chk-input:checked + .chk-box {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .chk-input:checked + .chk-box svg {
+            display: block;
+        }
+        /* Hide scrollbar for clean tab scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Print Styles */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .card-day { break-inside: avoid; page-break-inside: avoid; border: 1px solid #cbd5e1 !important; color: black !important; background: white !important; }
+            .chk-box { border-color: #000 !important; }
+            input[type="text"] { color: black !important; border-bottom: 1px solid #94a3b8 !important; }
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 select-none pb-20">
+
+    <!-- Sticky Navigation Header -->
+    <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-md no-print">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-wide text-white flex items-center gap-2">
+                        CHECKLIST DE TREINOS
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Novembro & Dezembro</p>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-1.5">
+                <button onclick="openResetModal()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition" title="Resetar Progresso">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+                <button onclick="window.print()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Imprimir / Exportar PDF">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Overall Progress Bar -->
+        <div class="max-w-md mx-auto mt-3 pt-2 border-t border-slate-800/80">
+            <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                <span class="text-slate-300 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Progresso Concluído
+                </span>
+                <span id="progress-text" class="text-blue-400">0% (0/0)</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-3 pt-4">
+
+        <!-- Week Filter Tab Navigation -->
+        <nav class="mb-5 no-print">
+            <div class="flex gap-1.5 overflow-x-auto pb-2 no-scrollbar snap-x" id="week-tabs">
+                <!-- Dynamically generated week buttons -->
+            </div>
+        </nav>
+
+        <!-- Auto-save Toast -->
+        <div id="toast-save" class="fixed bottom-4 right-4 bg-slate-800 border border-slate-700 text-xs text-emerald-400 px-3 py-2 rounded-xl shadow-2xl flex items-center gap-2 opacity-0 transition-opacity duration-300 z-50 pointer-events-none">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Salvo no dispositivo</span>
+        </div>
+
+        <!-- Schedule Container -->
+        <div id="schedule-container" class="space-y-6">
+            <!-- Rendered by JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- Custom Reset Modal -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-xs w-full shadow-2xl transform scale-95 transition-transform duration-200">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-3 border border-red-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-center text-white mb-1">Resetar Todos os Treinos?</h3>
+            <p class="text-xs text-slate-400 text-center mb-5">Esta ação apagará todos os seus checks, opções de treino selecionadas e anotações armazenadas no celular.</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeResetModal()" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition">Cancelar</button>
+                <button onclick="confirmReset()" class="w-full py-2.5 px-3 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-500 transition shadow-lg shadow-red-600/30">Sim, Resetar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // Data Structure for the 6-Week Calendar
+        const scheduleData = [
+            {
+                weekNum: 1,
+                title: "Semana 1 (09 a 15 de Nov)",
+                badge: "Sem aumento de carga",
+                days: [
+                    { id: "w1_d1", dayName: "Segunda-feira", date: "09 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w1_d2", dayName: "Terça-feira", date: "10 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w1_d3", dayName: "Quarta-feira", date: "11 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w1_d4", dayName: "Quinta-feira", date: "12 Nov", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w1_d5", dayName: "Sexta-feira", date: "13 Nov", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w1_d6", dayName: "Sábado", date: "14 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "rest", label: "Descanso" }] },
+                    { id: "w1_d7", dayName: "Domingo", date: "15 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            },
+            {
+                weekNum: 2,
+                title: "Semana 2 (16 a 22 de Nov)",
+                badge: "Sem aumento de carga",
+                days: [
+                    { id: "w2_d1", dayName: "Segunda-feira", date: "16 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w2_d2", dayName: "Terça-feira", date: "17 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w2_d3", dayName: "Quarta-feira", date: "18 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w2_d4", dayName: "Quinta-feira", date: "19 Nov", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w2_d5", dayName: "Sexta-feira", date: "20 Nov", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w2_d6", dayName: "Sábado", date: "21 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "rest", label: "Descanso" }] },
+                    { id: "w2_d7", dayName: "Domingo", date: "22 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            },
+            {
+                weekNum: 3,
+                title: "Semana 3 (23 a 29 de Nov)",
+                badge: "⬆️ 10% Membros Superiores",
+                badgeColor: "text-amber-400 bg-amber-400/10 border-amber-400/20",
+                days: [
+                    { id: "w3_d1", dayName: "Segunda-feira", date: "23 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w3_d2", dayName: "Terça-feira", date: "24 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w3_d3", dayName: "Quarta-feira", date: "25 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w3_d4", dayName: "Quinta-feira", date: "26 Nov", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w3_d5", dayName: "Sexta-feira", date: "27 Nov", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w3_d6", dayName: "Sábado", date: "28 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "rest", label: "Descanso" }] },
+                    { id: "w3_d7", dayName: "Domingo", date: "29 Nov", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            },
+            {
+                weekNum: 4,
+                title: "Semana 4 (30 Nov a 06 Dez)",
+                badge: "Manutenção",
+                days: [
+                    { id: "w4_d1", dayName: "Segunda-feira", date: "30 Nov", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w4_d2", dayName: "Terça-feira", date: "01 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w4_d3", dayName: "Quarta-feira", date: "02 Dez", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w4_d4", dayName: "Quinta-feira", date: "03 Dez", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w4_d5", dayName: "Sexta-feira", date: "04 Dez", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w4_d6", dayName: "Sábado", date: "05 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "rest", label: "Descanso" }] },
+                    { id: "w4_d7", dayName: "Domingo", date: "06 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            },
+            {
+                weekNum: 5,
+                title: "Semana 5 (07 a 13 de Dez)",
+                badge: "Manutenção",
+                days: [
+                    { id: "w5_d1", dayName: "Segunda-feira", date: "07 Dez", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w5_d2", dayName: "Terça-feira", date: "08 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w5_d3", dayName: "Quarta-feira", date: "09 Dez", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w5_d4", dayName: "Quinta-feira", date: "10 Dez", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w5_d5", dayName: "Sexta-feira", date: "11 Dez", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w5_d6", dayName: "Sábado", date: "12 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "rest", label: "Descanso" }] },
+                    { id: "w5_d7", dayName: "Domingo", date: "13 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            },
+            {
+                weekNum: 6,
+                title: "Semana 6 (14 a 18 de Dez)",
+                badge: "Finalização",
+                days: [
+                    { id: "w6_d1", dayName: "Segunda-feira", date: "14 Dez", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w6_d2", dayName: "Terça-feira", date: "15 Dez", tasks: [{ type: "run", label: "Corrida" }, { type: "tennis", label: "Tênis" }] },
+                    { id: "w6_d3", dayName: "Quarta-feira", date: "16 Dez", tasks: [{ type: "gym", label: "Academia" }] },
+                    { id: "w6_d4", dayName: "Quinta-feira", date: "17 Dez", tasks: [{ type: "run", label: "Corrida" }] },
+                    { id: "w6_d5", dayName: "Sexta-feira", date: "18 Dez", tasks: [{ type: "gym", label: "Academia" }, { type: "tennis", label: "Tênis" }] }
+                ]
+            }
+        ];
+
+        // State & LocalStorage Management
+        const STORAGE_KEY = 'workout_checklist_state_v2';
+        let appState = loadState();
+        let currentWeekFilter = 0; // 0 = View All
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                showSaveToast();
+                updateProgress();
+            } catch (e) {
+                console.error("Error saving state:", e);
+            }
+        }
+
+        function showSaveToast() {
+            const toast = document.getElementById('toast-save');
+            toast.style.opacity = '1';
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 1200);
+        }
+
+        // Render Navigation Tabs
+        function renderWeekTabs() {
+            const container = document.getElementById('week-tabs');
+            let html = `
+                <button onclick="filterWeek(0)" class="snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${currentWeekFilter === 0 ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+                    Todas
+                </button>
+            `;
+
+            scheduleData.forEach(w => {
+                const isActive = currentWeekFilter === w.weekNum;
+                html += `
+                    <button onclick="filterWeek(${w.weekNum})" class="snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+                        Semana ${w.weekNum}
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterWeek(weekNum) {
+            currentWeekFilter = weekNum;
+            renderWeekTabs();
+            renderSchedule();
+        }
+
+        // Render Workout Schedule
+        function renderSchedule() {
+            const container = document.getElementById('schedule-container');
+            const filtered = currentWeekFilter === 0 
+                ? scheduleData 
+                : scheduleData.filter(w => w.weekNum === currentWeekFilter);
+
+            let html = '';
+
+            filtered.forEach(week => {
+                html += `
+                    <section class="space-y-3">
+                        <div class="flex items-center justify-between px-1">
+                            <div>
+                                <h2 class="text-sm font-bold text-white tracking-wide">${week.title}</h2>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${week.badgeColor || 'text-blue-400 bg-blue-500/10 border-blue-500/20'}">
+                                ${week.badge}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2.5">
+                `;
+
+                week.days.forEach(day => {
+                    html += renderDayCard(day);
+                });
+
+                html += `
+                        </div>
+                    </section>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateProgress();
+        }
+
+        function renderDayCard(day) {
+            let tasksHtml = '';
+
+            day.tasks.forEach((task, idx) => {
+                const checkKey = `${day.id}_t${idx}_chk`;
+                const selectKey = `${day.id}_t${idx}_sel`;
+                const noteKey = `${day.id}_t${idx}_txt`;
+
+                const isChecked = !!appState[checkKey];
+                const selectedVal = appState[selectKey] || '';
+                const textVal = appState[noteKey] || '';
+
+                if (task.type === 'gym') {
+                    tasksHtml += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                            <label class="flex items-center gap-2.5 cursor-pointer tap-highlight-transparent">
+                                <input type="checkbox" onchange="toggleCheck('${checkKey}')" ${isChecked ? 'checked' : ''} class="chk-input hidden">
+                                <div class="chk-box w-5 h-5 rounded-md border-2 border-slate-600 bg-slate-800 flex items-center justify-center transition">
+                                    <svg class="w-3.5 h-3.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="text-xs font-bold text-slate-200 ${isChecked ? 'line-through text-slate-500' : ''}">${task.label}</span>
+                                </div>
+                            </label>
+                            
+                            <!-- Dropdown Treino A/B/C -->
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[11px] text-slate-400 font-medium">Treino:</span>
+                                <select onchange="updateSelect('${selectKey}', this.value)" class="bg-slate-800 border border-slate-700 text-blue-400 font-bold text-xs rounded-lg px-2 py-1 outline-none focus:border-blue-500">
+                                    <option value="" ${selectedVal === '' ? 'selected' : ''}>--</option>
+                                    <option value="A" ${selectedVal === 'A' ? 'selected' : ''}>A</option>
+                                    <option value="B" ${selectedVal === 'B' ? 'selected' : ''}>B</option>
+                                    <option value="C" ${selectedVal === 'C' ? 'selected' : ''}>C</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (task.type === 'run') {
+                    tasksHtml += `
+                        <div class="flex flex-col gap-2 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2.5 cursor-pointer tap-highlight-transparent">
+                                    <input type="checkbox" onchange="toggleCheck('${checkKey}')" ${isChecked ? 'checked' : ''} class="chk-input hidden">
+                                    <div class="chk-box w-5 h-5 rounded-md border-2 border-slate-600 bg-slate-800 flex items-center justify-center transition">
+                                        <svg class="w-3.5 h-3.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                        <span class="text-xs font-bold text-slate-200 ${isChecked ? 'line-through text-slate-500' : ''}">${task.label}</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Input para tipo de corrida -->
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <input type="text" 
+                                    placeholder="Ex: Tiro, Z2, Regenerativo..." 
+                                    value="${escapeHtml(textVal)}" 
+                                    oninput="updateInput('${noteKey}', this.value)"
+                                    class="w-full bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-amber-300 placeholder-slate-500 outline-none focus:border-amber-500 transition">
+                            </div>
+                        </div>
+                    `;
+                } else if (task.type === 'tennis') {
+                    tasksHtml += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                            <label class="flex items-center gap-2.5 cursor-pointer tap-highlight-transparent">
+                                <input type="checkbox" onchange="toggleCheck('${checkKey}')" ${isChecked ? 'checked' : ''} class="chk-input hidden">
+                                <div class="chk-box w-5 h-5 rounded-md border-2 border-slate-600 bg-slate-800 flex items-center justify-center transition">
+                                    <svg class="w-3.5 h-3.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                                    <span class="text-xs font-bold text-slate-200 ${isChecked ? 'line-through text-slate-500' : ''}">${task.label}</span>
+                                </div>
+                            </label>
+                        </div>
+                    `;
+                } else if (task.type === 'rest') {
+                    tasksHtml += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                            <label class="flex items-center gap-2.5 cursor-pointer tap-highlight-transparent">
+                                <input type="checkbox" onchange="toggleCheck('${checkKey}')" ${isChecked ? 'checked' : ''} class="chk-input hidden">
+                                <div class="chk-box w-5 h-5 rounded-md border-2 border-slate-600 bg-slate-800 flex items-center justify-center transition">
+                                    <svg class="w-3.5 h-3.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span class="text-xs font-bold text-slate-200 ${isChecked ? 'line-through text-slate-500' : ''}">${task.label}</span>
+                                </div>
+                            </label>
+                        </div>
+                    `;
+                }
+            });
+
+            return `
+                <div class="card-day bg-slate-800/60 border border-slate-800 rounded-2xl p-3 space-y-2.5 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-700/50 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">${day.dayName}</span>
+                        </div>
+                        <span class="text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg border border-blue-500/20">${day.date}</span>
+                    </div>
+                    <div class="space-y-2">
+                        ${tasksHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Action Handlers
+        function toggleCheck(key) {
+            appState[key] = !appState[key];
+            saveState();
+            renderSchedule();
+        }
+
+        function updateSelect(key, val) {
+            appState[key] = val;
+            saveState();
+        }
+
+        function updateInput(key, val) {
+            appState[key] = val;
+            saveState();
+        }
+
+        function updateProgress() {
+            let total = 0;
+            let checked = 0;
+
+            scheduleData.forEach(w => {
+                w.days.forEach(d => {
+                    d.tasks.forEach((t, idx) => {
+                        total++;
+                        const key = `${d.id}_t${idx}_chk`;
+                        if (appState[key]) checked++;
+                    });
+                });
+            });
+
+            const percentage = total > 0 ? Math.round((checked / total) * 100) : 0;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').innerText = `${percentage}% (${checked}/${total})`;
+        }
+
+        // Modal Controls
+        function openResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.children[0].classList.remove('scale-95');
+            modal.children[0].classList.add('scale-100');
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function confirmReset() {
+            appState = {};
+            saveState();
+            closeResetModal();
+            renderSchedule();
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Initial Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderWeekTabs();
+            renderSchedule();
+        });
+    </script>
+</body>
+</html>
